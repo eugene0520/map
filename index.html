@@ -1,1 +1,83 @@
 
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="https://npmcdn.com/leaflet@0.7.7/dist/leaflet.css" />
+    <script src="https://npmcdn.com/leaflet@0.7.7/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        #mapid {
+            height: 98vh;
+            width: 197vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="mapid"></div>
+    <div id="park-list"></div>
+</body>
+<script>
+    // 建立 Leaflet 地圖s
+    var map = L.map('mapid');
+
+    // 第二個參數數字越大代表zoom in越近
+    map.setView(new L.LatLng(25.07611705, 121.560032), 13);
+
+    // 設定圖資來源
+    var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    var osm = new L.TileLayer(osmUrl, {
+        minZoom: 8, //縮小地圖的最小值
+        maxZoom: 16 //放大地圖的最大值
+    });
+    map.addLayer(osm);
+    var html = "";
+    var ParkUrl = "http://data.taipei/opendata/datalist/apiAccess?scope=resourceAquire&rid=fe49c753-9358-49dd-8235-1fcadf5bfd3f"
+    $.ajax({
+        type: "GET",
+        dataType: "json",
+        url: ParkUrl,
+        error: function (e) {
+            console.log('oh no');
+        },
+        success: function (response) {
+
+            //response就是回傳回來的JSON資料
+            console.log(response);
+
+            //這邊看要怎麼使用回來的資料，我們寫一個renderForestList()來把資料顯示在畫面上
+            renderParkList(response.result.results);
+
+
+        }
+    });
+    function renderParkList(park) {
+
+        park.forEach(function (park) {
+
+            console.log(park);//先把資料印出來看看
+            var name = park['Location'];
+            var x = park['Longitude'];
+            var y = park['Latitude'];
+
+            html += '<div>' + name + ' X: ' + x + 'Y:' + y + '</div>';
+
+            //插入公園的marker
+            var orangeAppleMarker = L.marker([y , x]).addTo(map);
+            orangeAppleMarker.bindPopup(name);
+
+
+        }, this);
+
+
+    }
+    $("#park-list").html(html)
+
+</script>
+
+</html>
